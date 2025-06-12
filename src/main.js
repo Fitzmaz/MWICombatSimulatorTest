@@ -602,7 +602,32 @@ function initAbilitiesSection() {
         }
 
         selectElement.addEventListener("change", abilitySelectHandler);
+
+        let moveUpButton = document.getElementById("buttonAbilityMoveUp_" + i);
+        let moveDownButton = document.getElementById("buttonAbilityMoveDown_" + i);
+        moveUpButton.addEventListener("click", () => {
+            swapAbility(i, i - 1);
+            abilitySelectHandler();
+        });
+        moveDownButton.addEventListener("click", () => {
+            swapAbility(i, i + 1);
+            abilitySelectHandler();
+        });
     }
+}
+
+function swapAbility(index1, index2) {
+    let select1 = document.getElementById("selectAbility_" + index1);
+    let select2 = document.getElementById("selectAbility_" + index2);
+    let temp = select1.value;
+    select1.value = select2.value;
+    select2.value = temp;
+
+    let input1 = document.getElementById("inputAbilityLevel_" + index1);
+    let input2 = document.getElementById("inputAbilityLevel_" + index2);
+    temp = input1.value;
+    input1.value = input2.value;
+    input2.value = temp;
 }
 
 function abilitySelectHandler() {
