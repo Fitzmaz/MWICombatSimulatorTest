@@ -12,6 +12,7 @@ onmessage = async function (event) {
             for (let i = 0; i < playersData.length; i++) {
                 let currentPlayer = Player.createFromDTO(structuredClone(playersData[i]));
                 currentPlayer.zoneBuffs = zone.buffs;
+                currentPlayer.communityBuffs = event.data.communityBuffs;
                 players.push(currentPlayer);
             }
             let simulationTimeLimit = event.data.simulationTimeLimit;

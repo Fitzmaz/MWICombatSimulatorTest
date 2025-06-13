@@ -27,6 +27,7 @@ onmessage = async function (event) {
                             players: event.data.players,
                             zone: currentZone,
                             simulationTimeLimit: event.data.simulationTimeLimit,
+                            communityBuffs: event.data.communityBuffs,
                         };
                         simulationWorker.postMessage(workerMessage);
                         

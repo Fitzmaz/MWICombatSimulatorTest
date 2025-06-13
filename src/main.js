@@ -15,6 +15,7 @@ import combatMonsterDetailMap from "./combatsimulator/data/combatMonsterDetailMa
 import damageTypeDetailMap from "./combatsimulator/data/damageTypeDetailMap.json";
 import combatStyleDetailMap from "./combatsimulator/data/combatStyleDetailMap.json";
 import openableLootDropMap from "./combatsimulator/data/openableLootDropMap.json";
+import communityBuffTypeDetailMap from "./combatsimulator/data/communityBuffTypeDetailMap.json";
 
 import patchNote from "../patchNote.json";
 
@@ -2382,6 +2383,13 @@ function startSimulation(selectedPlayers) {
     let difficultySelect = document.getElementById("selectDifficulty");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
+    let experienceCommunityBuffInput = document.getElementById("inputExperienceCommunityBuff");
+    let communityBuffs = Object.values(communityBuffTypeDetailMap)
+    .filter(communityBuff => communityBuff.hrid == "/community_buff_types/experience")
+    .map(communityBuff => Object.assign(communityBuff.buff, {
+        flatBoost: Number(experienceCommunityBuffInput.value) / 100,
+        flatBoostLevelBonus: 0,
+    }));
     if (!simAllZonesToggle.checked) {
         let zoneHrid = zoneSelect.value;
         let difficultyTier = Number(difficultySelect.value);
@@ -2393,6 +2401,7 @@ function startSimulation(selectedPlayers) {
             players: playersToSim,
             zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
             simulationTimeLimit: simulationTimeLimit,
+            communityBuffs: communityBuffs,
         };
         worker.postMessage(workerMessage);
     } else {
@@ -2418,6 +2427,7 @@ function startSimulation(selectedPlayers) {
             players: playersToSim,
             zones: zoneHrids,
             simulationTimeLimit: simulationTimeLimit,
+            communityBuffs: communityBuffs,
         };
         multiWorker.postMessage(workerMessage);
     }

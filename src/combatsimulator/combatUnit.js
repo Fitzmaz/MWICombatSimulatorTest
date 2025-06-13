@@ -150,6 +150,7 @@ class CombatUnit {
     combatBuffs = {};
     permanentBuffs = {};
     zoneBuffs = {};
+    communityBuffs = [];
 
     constructor() { }
 
@@ -389,6 +390,11 @@ class CombatUnit {
         }
         if (this.zoneBuffs) {
             this.zoneBuffs.forEach(buff => {
+                this.addPermanentBuff(buff);
+            });
+        }
+        if (this.communityBuffs) {
+            this.communityBuffs.forEach(buff => {
                 this.addPermanentBuff(buff);
             });
         }
