@@ -2501,6 +2501,13 @@ function updateEquipmentSetList() {
         newChildren.push(row);
     }
 
+    // sort by name
+    newChildren.sort((a, b) => {
+        if (a.firstChild.textContent < b.firstChild.textContent) return -1;
+        if (a.firstChild.textContent > b.firstChild.textContent) return 1;
+        return 0;
+    });
+
     let equipmentSetList = document.getElementById("equipmentSetList");
     equipmentSetList.replaceChildren(...newChildren);
 
