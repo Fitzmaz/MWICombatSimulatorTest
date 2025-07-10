@@ -2535,24 +2535,20 @@ function createNewEquipmentSetHandler() {
     let equipmentSetName = equipmentSetNameInput.value;
 
     let equipmentSet = getEquipmentSetFromUI();
-    let equipmentSets = loadEquipmentSets();
-    equipmentSets[equipmentSetName] = equipmentSet;
-    saveEquipmentSets(equipmentSets);
+    saveEquipmentSet(equipmentSetName, equipmentSet);
 
     resetNewEquipmentSetControls();
     updateEquipmentSetList();
 }
 
 function loadEquipmentSetHandler(name) {
-    let equipmentSets = loadEquipmentSets();
-    loadEquipmentSetIntoUI(equipmentSets[name]);
+    let equipmentSet = loadEquipmentSet(name);
+    loadEquipmentSetIntoUI(equipmentSet);
 }
 
 function updateEquipmentSetHandler(name) {
     let equipmentSet = getEquipmentSetFromUI();
-    let equipmentSets = loadEquipmentSets();
-    equipmentSets[name] = equipmentSet;
-    saveEquipmentSets(equipmentSets);
+    saveEquipmentSet(name, equipmentSet);
 }
 
 function deleteEquipmentSetHandler(name) {
@@ -2561,6 +2557,65 @@ function deleteEquipmentSetHandler(name) {
     saveEquipmentSets(equipmentSets);
 
     updateEquipmentSetList();
+}
+
+function loadEquipmentSet(name) {
+    let [characterName, loadoutName] = name.split("-");
+    if (loadoutName) {
+        let equipmentSets = loadEquipmentSets();
+        let equipmentSet = equipmentSets[name];
+
+        let characterData = loadCharacterData();
+        let { levels, houseRooms, enhancementLevelMap, abilityLevelMap } = characterData[characterName];
+        equipmentSet.levels = levels;
+        equipmentSet.houseRooms = houseRooms;
+        for (const location of Object.keys(equipmentSet.equipment)) {
+            let itemHrid = equipmentSet.equipment[location].equipment;
+            equipmentSet.equipment[location].enhancementLevel = enhancementLevelMap[itemHrid];
+        }
+        for (const idx of Object.keys(equipmentSet.abilities)) {
+            let abilityHrid = equipmentSet.abilities[idx].ability;
+            equipmentSet.abilities[idx].level = abilityLevelMap[abilityHrid];
+        }
+        return equipmentSet;
+    }
+    let equipmentSets = loadEquipmentSets();
+    return equipmentSets[name];
+}
+
+function saveEquipmentSet(name, equipmentSet) {
+    let [characterName, loadoutName] = name.split("-");
+    if (loadoutName) {
+        let characterData = loadCharacterData();
+        let enhancementLevelMap = characterData[characterName]?.enhancementLevelMap || {};
+        let abilityLevelMap = characterData[characterName]?.abilityLevelMap || {};
+        for (const location of Object.keys(equipmentSet.equipment)) {
+            let itemHrid = equipmentSet.equipment[location].equipment;
+            enhancementLevelMap[itemHrid] = equipmentSet.equipment[location].enhancementLevel;
+        }
+        for (const idx of Object.keys(equipmentSet.abilities)) {
+            let abilityHrid = equipmentSet.abilities[idx].ability;
+            abilityLevelMap[abilityHrid] = equipmentSet.abilities[idx].level;
+        }
+        characterData[characterName] = {
+            levels: equipmentSet.levels,
+            houseRooms: equipmentSet.houseRooms,
+            enhancementLevelMap,
+            abilityLevelMap,
+        };
+        saveCharacterData(characterData);
+    }
+    let equipmentSets = loadEquipmentSets();
+    equipmentSets[name] = equipmentSet;
+    saveEquipmentSets(equipmentSets);
+}
+
+function loadCharacterData() {
+    return JSON.parse(localStorage.getItem("characterData")) ?? {};
+}
+
+function saveCharacterData(characterData) {
+    localStorage.setItem("characterData", JSON.stringify(characterData));
 }
 
 function loadEquipmentSets() {
