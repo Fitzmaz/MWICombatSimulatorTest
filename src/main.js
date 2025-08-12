@@ -2466,34 +2466,37 @@ function updateEquipmentSetList() {
     let equipmentSets = loadEquipmentSets();
 
     for (const equipmentSetName of Object.keys(equipmentSets)) {
-        let row = createElement("div", "row mb-2");
+        let row = createElement("div", "d-flex justify-content-between mb-2");
 
-        let nameCol = createElement("div", "col align-self-center", equipmentSetName);
+        let nameCol = createElement("div", "align-self-center", equipmentSetName);
         row.appendChild(nameCol);
 
-        let loadButtonCol = createElement("div", "col-md-auto");
+        let buttonsCol = createElement("div", "d-flex");
+        row.appendChild(buttonsCol);
+
+        let loadButtonCol = createElement("div", "col-auto");
         let loadButton = createElement("button", "btn btn-primary", "Load");
         loadButton.setAttribute("data-i18n", "common:controls.load");
         loadButton.setAttribute("type", "button");
         loadButton.addEventListener("click", (_) => loadEquipmentSetHandler(equipmentSetName));
         loadButtonCol.appendChild(loadButton);
-        row.appendChild(loadButtonCol);
+        buttonsCol.appendChild(loadButtonCol);
 
-        let saveButtonCol = createElement("div", "col-md-auto");
+        let saveButtonCol = createElement("div", "col-auto");
         let saveButton = createElement("button", "btn btn-primary", "Save");
         saveButton.setAttribute("data-i18n", "common:controls.save");
         saveButton.setAttribute("type", "button");
         saveButton.addEventListener("click", (_) => updateEquipmentSetHandler(equipmentSetName));
         saveButtonCol.appendChild(saveButton);
-        row.appendChild(saveButtonCol);
+        buttonsCol.appendChild(saveButtonCol);
 
-        let deleteButtonCol = createElement("div", "col-md-auto");
+        let deleteButtonCol = createElement("div", "col-auto");
         let deleteButton = createElement("button", "btn btn-danger", "Delete");
         deleteButton.setAttribute("data-i18n", "common:controls.delete");
         deleteButton.setAttribute("type", "button");
         deleteButton.addEventListener("click", (_) => deleteEquipmentSetHandler(equipmentSetName));
         deleteButtonCol.appendChild(deleteButton);
-        row.appendChild(deleteButtonCol);
+        buttonsCol.appendChild(deleteButtonCol);
 
         newChildren.push(row);
     }
