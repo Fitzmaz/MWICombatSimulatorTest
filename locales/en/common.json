@@ -18,7 +18,6 @@
         "title": "Controls",
         "battleQueue": "BattleQueue?",
         "startSimulation": "Start Simulation",
-        "stopSimulation": "Stop Simulation",
         "calcCoffeeBenefits": "Calc Coffee Benefits",
         "coffeeResults": "Coffee Results",
         "calcSpecialAbilityBenefits": "Calc Special Ability Benefits",
@@ -87,14 +86,5 @@
     "solo": "Solo",
     "or": "OR",
     "import": "Import",
-    "exportGroupSolo": "Export Group/Solo",
-    "noWipeEvents": "No Wipe Events",
-    "noWipeEventsDetected": "No Wipe Events Detected",
-    "WipeEvents": "Wipe Events",
-    "combatLogs": "Combat Logs",
-    "selectWipeEvent": "Select Wipe Event",
-    "cast": " cast ",
-    "to": " to ",
-    "dealDamage": " deal damage ",
-    "playersHp": "Players HP: "
+    "exportGroupSolo": "Export Group/Solo"
 }

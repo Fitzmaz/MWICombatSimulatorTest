@@ -137,7 +137,6 @@ class CombatUtilities {
 
         let hitChance = 1;
         let critChance = 0;
-        let isCrit = false;
         let bonusCritChance = source.combatDetails.combatStats.criticalRate;
         let bonusCritDamage = source.combatDetails.combatStats.criticalDamage;
 
@@ -170,7 +169,6 @@ class CombatUtilities {
         if (Math.random() < critChance) {
             sourceMaxDamage = sourceMaxDamage * (1 + bonusCritDamage);
             sourceMinDamage = sourceMaxDamage;
-            isCrit = true;
         }
 
         let damageRoll = CombatUtilities.randomInt(sourceMinDamage, sourceMaxDamage);
@@ -282,7 +280,7 @@ class CombatUtilities {
             manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
         }
 
-        return { damageDone, didHit, thornDamageDone, thornType, retaliationDamageDone, lifeStealHeal, hpDrain, manaLeechMana, isCrit};
+        return { damageDone, didHit, thornDamageDone, thornType, retaliationDamageDone, lifeStealHeal, hpDrain, manaLeechMana };
     }
 
     static processHeal(source, abilityEffect, target) {
