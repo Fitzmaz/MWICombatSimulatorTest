@@ -430,8 +430,33 @@ function updateCombatStatsUI() {
             minimumFractionDigits: 0,
             maximumFractionDigits: 4,
         });
-        element.innerHTML = value + "%";
+        element.textContent = value + "%";
     });
+    const element = document.getElementById("combatStat_mpRegenPer10");
+    let { maxManapoints } = player.combatDetails;
+    let { mpRegenPer10 } = player.combatDetails.combatStats;
+
+    // coffee
+    const intCoffee = drinks.find(item => item.endsWith("intelligence_coffee"));
+    if (intCoffee) {
+        const { buffs } = itemDetailMap[intCoffee].consumableDetail;
+        const levelBuff = buffs.find(item => item.typeHrid === "/buff_types/intelligence_level");
+        maxManapoints += 10 * player.intelligenceLevel * levelBuff.ratioBoost;
+        maxManapoints += 10 * levelBuff.flatBoost;
+        const regenBuff = buffs.find(item => item.typeHrid === "/buff_types/mp_regen");
+        mpRegenPer10 += mpRegenPer10 * regenBuff.ratioBoost;
+        mpRegenPer10 += regenBuff.flatBoost;
+    }
+
+    // house
+    const libraryLevel = player.houseRooms["/house_rooms/library"];
+    if (libraryLevel) {
+        maxManapoints += 10 * libraryLevel;
+        mpRegenPer10 += 0.0003 * libraryLevel;
+    }
+
+    const mpRegen = maxManapoints * mpRegenPer10;
+    element.textContent = element.textContent + ` (${mpRegen})`;
 }
 
 // #endregion
