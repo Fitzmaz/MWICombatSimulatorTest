@@ -136,7 +136,10 @@ class Monster extends CombatUnit {
             }
         });
 
-        this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
+        if (this.combatDetails.combatStats.attackInterval == 0) {
+            console.warn("combatStats.attackInterval == 0", gameMonster.hrid)
+            this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval * (1 + gameMonster.combatDetails.attackLevel / 2000);
+        }
 
         super.updateCombatDetails();
     }
