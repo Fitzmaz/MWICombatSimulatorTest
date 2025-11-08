@@ -321,7 +321,7 @@ class CombatUtilities {
         let amountHealed = target.addHitpoints(heal);
         target.combatDetails.currentManapoints = target.combatDetails.maxManapoints;
         target.clearCCs();
-        target.clearBuffs();
+        // target.clearBuffs();
 
         return amountHealed;
     }
