@@ -25,10 +25,6 @@ const ONE_HOUR = 60 * 60 * ONE_SECOND;
 let buttonStartSimulation = document.getElementById("buttonStartSimulation");
 let progressbar = document.getElementById("simulationProgressBar");
 
-let worker = new Worker(new URL("worker.js", import.meta.url));
-let multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
-
-
 let player = new Player();
 let selectedPlayers = [];
 let food = [null, null, null];
@@ -54,48 +50,90 @@ window.noRngProfit = 0;
 
 // #region Worker
 
-worker.onmessage = function (event) {
-    switch (event.data.type) {
-        case "simulation_result":
-            progressbar.style.width = "100%";
-            progressbar.innerHTML = "100%";
-            //console.log("SIM RESULTS: ", event.data.simResult);
-            showSimulationResult(event.data.simResult);
-            updateContent();
-            buttonStartSimulation.disabled = false;
-            document.getElementById('buttonShowAllSimData').style.display = 'none';
-            break;
-        case "simulation_progress":
-            let progress = Math.floor(100 * event.data.progress);
-            progressbar.style.width = progress + "%";
-            progressbar.innerHTML = progress + "%";
-            break;
-        case "simulation_error":
-            showErrorModal(event.data.error.toString());
-            break;
-    }
-};
+async function startWorker(zoneHrids, players, simulationTimeLimit, communityBuffs) {
+    const maxWorkers = navigator.hardwareConcurrency || 4;
+    const taskQueue = [...zoneHrids];
+    const results = new Array(zoneHrids.length);
+    const zoneProgress = Object.fromEntries(zoneHrids.map(zone => 
+        [zone.zoneHrid + '#' + zone.difficultyTier, 0]
+    ));
 
-multiWorker.onmessage = function (event) {
-    switch (event.data.type) {
-        case "simulation_result_allZones":
-            progressbar.style.width = "100%";
-            progressbar.innerHTML = "100%";
-            showAllSimulationResults(event.data.simResults);
-            updateContent();
-            buttonStartSimulation.disabled = false;
-            document.getElementById('buttonShowAllSimData').style.display = 'block';
-            break;
-        case "simulation_progress":
-            let progress = Math.floor(100 * event.data.progress);
-            progressbar.style.width = progress + "%";
-            progressbar.innerHTML = progress + "%";
-            break;
-        case "simulation_error":
-            showErrorModal(event.data.error.toString());
-            break;
+    const workers = [];
+    const activeWorkers = new Set();
+
+    // 创建 Worker 池
+    for (let i = 0; i < Math.min(maxWorkers, zoneHrids.length); i++) {
+        const worker = new Worker(new URL("worker.js", import.meta.url));
+        workers.push(worker);
+        
+        worker.onmessage = function(event) {
+            if (event.data.type === "simulation_result") {
+                const resultIndex = event.data.resultIndex;
+                results[resultIndex] = event.data.simResult;
+                activeWorkers.delete(worker);
+                
+                // 分配新任务或完成
+                assignNextTask(worker);
+            } else if (event.data.type === "simulation_progress") {
+                zoneProgress[event.data.zone + '#' + event.data.difficultyTier] = event.data.progress;
+                const totalProgress = Object.values(zoneProgress).reduce((acc, progress) => acc + progress, 0) / Object.keys(zoneProgress).length;
+                // onProgress
+                let progress = Math.floor(100 * totalProgress);
+                progressbar.style.width = progress + "%";
+                progressbar.innerHTML = progress + "%";
+            } else if (event.data.type === "simulation_error") {
+                showErrorModal(event.data.error.toString());
+            }
+        };
     }
-};
+
+    function assignNextTask(worker) {
+        if (taskQueue.length === 0) {
+            if (activeWorkers.size === 0) {
+                // 所有任务完成
+                workers.forEach(w => w.terminate());
+                console.log("simResults", results)
+                // onComplete
+                if (results.length === 1) {
+                    progressbar.style.width = "100%";
+                    progressbar.innerHTML = "100%";
+                    showSimulationResult(results[0]);
+                    updateContent();
+                    buttonStartSimulation.disabled = false;
+                    document.getElementById('buttonShowAllSimData').style.display = 'none';
+                } else if (results.length > 1) {
+                    progressbar.style.width = "100%";
+                    progressbar.innerHTML = "100%";
+                    showAllSimulationResults(results);
+                    updateContent();
+                    buttonStartSimulation.disabled = false;
+                    document.getElementById('buttonShowAllSimData').style.display = 'block';
+                }
+            }
+            return;
+        }
+
+        const resultIndex = zoneHrids.length - taskQueue.length;
+        const currentZone = taskQueue.shift();
+        activeWorkers.add(worker);
+
+        worker.postMessage({
+            type: "start_simulation",
+            players: players,
+            zone: currentZone,
+            simulationTimeLimit: simulationTimeLimit,
+            communityBuffs: communityBuffs,
+            resultIndex: resultIndex
+        });
+    }
+
+    // 初始分配任务
+    workers.forEach(worker => {
+        if (taskQueue.length > 0) {
+            assignNextTask(worker);
+        }
+    });
+}
 
 // #endregion
 
@@ -2415,22 +2453,16 @@ function startSimulation(selectedPlayers) {
         flatBoost: Number(experienceCommunityBuffInput.value) / 100,
         flatBoostLevelBonus: 0,
     }));
+    let zoneHrids;
     if (!simAllZonesToggle.checked) {
         let zoneHrid = zoneSelect.value;
         let difficultyTier = Number(difficultySelect.value);
         if (simDungeonToggle.checked) {
             zoneHrid = dungeonSelect.value;
         }
-        let workerMessage = {
-            type: "start_simulation",
-            players: playersToSim,
-            zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
-            simulationTimeLimit: simulationTimeLimit,
-            communityBuffs: communityBuffs,
-        };
-        worker.postMessage(workerMessage);
+        zoneHrids = [{ zoneHrid: zoneHrid, difficultyTier: difficultyTier }];
     } else {
-        let zoneHrids = Object.values(actionDetailMap)
+        zoneHrids = Object.values(actionDetailMap)
             .filter((action) =>
                 action.type == "/action_types/combat" &&
                 action.category != "/action_categories/combat/dungeons" &&
@@ -2446,16 +2478,8 @@ function startSimulation(selectedPlayers) {
                 return result;
             })
             .flat();
-
-        let workerMessage = {
-            type: "start_simulation_all_zones",
-            players: playersToSim,
-            zones: zoneHrids,
-            simulationTimeLimit: simulationTimeLimit,
-            communityBuffs: communityBuffs,
-        };
-        multiWorker.postMessage(workerMessage);
     }
+    startWorker(zoneHrids, playersToSim, simulationTimeLimit, communityBuffs);
 }
 
 // #endregion

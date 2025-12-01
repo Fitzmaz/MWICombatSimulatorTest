@@ -23,7 +23,7 @@ onmessage = async function (event) {
 
             try {
                 let simResult = await combatSimulator.simulate(simulationTimeLimit);
-                this.postMessage({ type: "simulation_result", simResult: simResult });
+                this.postMessage({ type: "simulation_result", simResult: simResult, resultIndex: event.data.resultIndex });
             } catch (e) {
                 console.log(e);
                 this.postMessage({ type: "simulation_error", error: e });
