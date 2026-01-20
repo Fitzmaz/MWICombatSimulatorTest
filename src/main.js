@@ -1573,7 +1573,11 @@ function showKills(simResult, playerToDisplay) {
             newChildren.push(monsterRow);
         });
 
-    let { totalDropMap, noRngTotalDropMap } = calcDropMaps(simResult, playerToDisplay);
+    let totalDropMap = new Map();
+    let noRngTotalDropMap = new Map();
+    if (!simResult.isDungeon) {
+        ({ totalDropMap, noRngTotalDropMap } = calcDropMaps(simResult, playerToDisplay));
+    }
 
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     let total = 0;
