@@ -1365,7 +1365,12 @@ class CombatSimulator extends EventTarget {
                     healTarget = target;
                     continue;
                 }
-                if (target.combatDetails.currentHitpoints < healTarget.combatDetails.currentHitpoints) {
+                // if (target.combatDetails.currentHitpoints < healTarget.combatDetails.currentHitpoints) {
+                //     healTarget = target;
+                // }
+                const targetHpPercent = target.combatDetails.currentHitpoints / target.combatDetails.maxHitpoints;
+                const healTargetHpPercent = healTarget.combatDetails.currentHitpoints / healTarget.combatDetails.maxHitpoints;
+                if (targetHpPercent < healTargetHpPercent) {
                     healTarget = target;
                 }
             }
