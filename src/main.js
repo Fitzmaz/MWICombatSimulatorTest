@@ -2730,6 +2730,10 @@ function getEquipmentSetFromUI() {
 function fixTriggerMap(triggerMap) {
     let delKeys = []
     for (const key of Object.keys(triggerMap)) {
+        if (triggerMap[key] === null) {
+            triggerMap[key] = [];
+            continue;
+        }
         let err = false;
         for (const trigger of triggerMap[key]) {
             if (!combatTriggerConditionDetailMap[trigger.conditionHrid]) {
