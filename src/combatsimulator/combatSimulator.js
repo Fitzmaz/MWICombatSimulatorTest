@@ -719,9 +719,9 @@ class CombatSimulator extends EventTarget {
 
     processRegenTickEvent(event) {
         let units = [...this.players];
-        if (this.enemies) {
-            units.push(...this.enemies);
-        }
+        // if (this.enemies) {
+        //     units.push(...this.enemies);
+        // }
 
         for (const unit of units) {
             if (unit.combatDetails.currentHitpoints <= 0) {
@@ -1000,7 +1000,6 @@ class CombatSimulator extends EventTarget {
             castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
             // console.log((this.simulationTime / 1000000000) + " Used ability " + ability.hrid + " Cast time " + (castDuration / 1e9));
         }*/
-        this.addNextAttackEvent(source);
 
         let todoAbilities = [ability];
 
@@ -1053,6 +1052,8 @@ class CombatSimulator extends EventTarget {
                 }
             }
         }
+
+        this.addNextAttackEvent(source);
 
         // Could die from reflect damage
         if (source.combatDetails.currentHitpoints == 0) {
